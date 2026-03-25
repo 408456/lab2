@@ -1,0 +1,35 @@
+
+###
+# curl -X POST http://localhost:8080/realms/booking-app/protocol/openid-connect/token
+#  -H "Content-Type: application/x-www-form-urlencoded"
+#  -d "client_id=frontend"
+#  -d "client_secret=yEvAIJerp4leWg5t3EdgkM4ExZjbNYXw"
+#  -d "grant_type=password"
+#  -d "username=test_admin"
+#  -d "password=ваш_пароль"
+
+###
+# curl -X POST http://localhost:8080/realms/booking-app/protocol/openid-connect/token
+#  -H "Content-Type: application/x-www-form-urlencoded"
+#  -d "client_id=frontend"
+#  -d "client_secret=yEvAIJerp4leWg5t3EdgkM4ExZjbNYXw"
+#  -d "grant_type=password"
+#  -d "username=test_admin"
+#  -d "password=Pass_1234!"
+POST http://localhost:8085/realms/booking-app/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id = frontend &
+client_secret = yEvAIJerp4leWg5t3EdgkM4ExZjbNYXw &
+grant_type = password &
+username = test_admin &
+password = Pass_1234!
+
+###
+###
+
+
+# curl -v http://localhost:9696/swagger/user
+GET http://localhost:9696/swagger/user
+
+###

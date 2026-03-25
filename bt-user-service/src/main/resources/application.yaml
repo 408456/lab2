@@ -1,0 +1,63 @@
+server:
+  port: 9696
+
+spring:
+  config:
+    import: "optional:classpath:.env"
+  datasource:
+    #    url: jdbc:postgresql://db:5432/user-service
+    url: jdbc:postgresql://localhost:5432/user-service
+    username: postgres
+    password: postgres
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    topics:
+      user-created: user-created
+
+
+  jpa:
+    hibernate:
+      default_schema: public
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          #          issuer-uri: http://nginx/realms/booking-app
+          issuer-uri: http://localhost:8085/realms/booking-app
+  liquibase:
+    default_schema: public
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    enabled: true
+
+  logging:
+    logging:
+      level:
+        org.springframework.security: DEBUG
+        org.springframework.security.oauth2: DEBUG
+
+springdoc:
+  api-docs:
+    path: /api-docs/user
+  swagger-ui:
+    path: /swagger/user
+    oauth:
+      client-id: frontend
+      client-secret: hHkmOltodovvM0UJvccbcyk57TxVpHrr
+
+keycloak:
+  realm: booking-app
+#  serverUrl: http://keycloak:8085
+  serverUrl: http://localhost:8085
+  client:
+    service-client:
+      client-id: user-service-admin
+      client-secret: hFgYVWhC7TZZiSILOj289Zr8IAYHl3Qo

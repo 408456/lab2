@@ -1,0 +1,56 @@
+server:
+  port: 9797
+
+spring:
+  kafka:
+#    bootstrap-servers: kafka:29092
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+#        spring.json.type.mapping: userCreatedEvent:goltsman.btuserservice.model.event.UserCreatedEvent
+
+
+  config:
+    import: "optional:classpath:.env"
+  datasource:
+#    url: jdbc:postgresql://db:5432/restaurant-service
+#    url: jdbc:postgresql://localhost:5432/booking-service
+    url: jdbc:postgresql://localhost:5432/restaurant-service
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      default_schema: public
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+#          issuer-uri: http://nginx/realms/booking-app
+          issuer-uri: http://localhost:8085/realms/booking-app
+  liquibase:
+    default_schema: public
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    enabled: true
+
+springdoc:
+  api-docs:
+    path: /api-docs/restaurant
+  swagger-ui:
+    path: /swagger/restaurant
+    oauth:
+      client-id: frontend
+      client-secret: hHkmOltodovvM0UJvccbcyk57TxVpHrr
+
+#keycloak:
+#  realm: booking-app
+#  serverUrl: http://localhost:8085
+#
+#er-uri: http://localhost:8085/realms/booking-app

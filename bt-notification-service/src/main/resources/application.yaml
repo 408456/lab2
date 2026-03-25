@@ -1,0 +1,47 @@
+server:
+  port: 9009  # или любой свободный порт
+
+spring:
+  application:
+    name: notification-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/notification-service
+    username: postgres
+    password: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    enabled: true
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: notification-group
+    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    properties:
+      spring.json.trusted.packages: "*"
+
+    topics:
+      booking-confirmed: booking-confirmed
+      user-created: user-created
+
+springdoc:
+  api-docs:
+    path: /api-docs/notification
+  swagger-ui:
+    path: /swagger/notification
+
+logging:
+  level:
+    com.goltsman: DEBUG
+    org.springframework.kafka: DEBUG

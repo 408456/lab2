@@ -1,0 +1,139 @@
+services:
+
+#  nginx:
+#    image: nginx:stable-trixie-perl
+#    container_name: bt-nginx
+#    ports:
+#      - "8080:80"
+#    volumes:
+#      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+##      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+#      - ./nginx/hello.html:/usr/share/nginx/html/hello.html:ro
+#    depends_on:
+#      - user-service
+#    networks:
+#      - bt-network
+
+#  notification-service:
+#    build:
+#      context: ../../bt-notification-service
+#      dockerfile: Dockerfile
+#    container_name: notification-service
+#    ports:
+#      - "9009:9009"
+#    depends_on:
+#      - db
+##      - keycloak
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/notification-service
+#      SPRING_DATASOURCE_USERNAME: postgres
+#      SPRING_DATASOURCE_PASSWORD: postgres
+#      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://nginx/realms/booking-app
+#      KEYCLOAK_SERVERURL: http://keycloak:8080
+#      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+#    networks:
+#      - bt-network
+
+  db:
+    image: postgres:15
+    container_name: booking-postgres-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: booking-service
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - bt-network
+
+  keycloak-db:
+    image: postgres:15
+    container_name: keycloak-postgres-db
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql/data
+    networks:
+      - bt-network
+
+  keycloak:
+    image: keycloak/keycloak:26.5
+    container_name: bt-keycloak
+    command: start-dev
+    depends_on:
+      - keycloak-db
+    ports:
+      - "8085:8080"
+    environment:
+      KC_DB: postgres
+      KC_DB_URL_HOST: keycloak-db
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: postgres
+
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+
+      KC_HOSTNAME_STRICT: false
+      KC_HTTP_ENABLED: true
+      KC_HTTP_PORT: 8080
+#      KC_HOSTNAME_URL: http://nginx
+      KC_HOSTNAME_URL: http://localhost:8085
+
+    networks:
+      - bt-network
+
+  kafka:
+    image: apache/kafka:4.2.0
+    container_name: bt-kafka
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_NODE_ID: "1"
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: "1"
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: "0"
+      CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:29092 --list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bt-network
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:v0.7.2
+    container_name: bt-kafka-ui
+    ports:
+      - "8086:8080"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+    networks:
+      - bt-network
+
+volumes:
+  db-data:
+  keycloak-db-data:
+
+networks:
+  bt-network:
+    driver: bridge

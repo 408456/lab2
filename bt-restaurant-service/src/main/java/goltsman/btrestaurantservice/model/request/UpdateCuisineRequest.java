@@ -1,0 +1,29 @@
+package goltsman.btrestaurantservice.model.request;
+
+import goltsman.btrestaurantservice.common.ValidationPatternConstant;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class UpdateCuisineRequest {
+
+    @Schema(description = "Название кухни", example = "Итальянская")
+    @NotBlank
+    @Size(max = 100, message = "Название кухни не должно превышать 100 символов")
+    @Pattern(regexp = ValidationPatternConstant.TITLE_PATTERN,
+            message = ValidationPatternConstant.TITLE_PATTERN_MESSAGE_ERROR)
+    private String name;
+
+    @Schema(description = "Описание кухни", example = "Классическая итальянская кухня")
+    @Size(max = 100, message = "Описание не должно превышать 100 символов")
+    private String description;
+}

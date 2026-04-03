@@ -1,38 +1,120 @@
 services:
 
-#  nginx:
-#    image: nginx:stable-trixie-perl
-#    container_name: bt-nginx
-#    ports:
-#      - "8080:80"
-#    volumes:
-#      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-##      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-#      - ./nginx/hello.html:/usr/share/nginx/html/hello.html:ro
-#    depends_on:
-#      - user-service
-#    networks:
-#      - bt-network
+  nginx:
+    image: nginx:stable-trixie-perl
+    container_name: bt-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/hello.html:/usr/share/nginx/html/hello.html:ro
+    #    depends_on:
+    #      - user-service
+    networks:
+      - bt-network
 
-#  notification-service:
-#    build:
-#      context: ../../bt-notification-service
-#      dockerfile: Dockerfile
-#    container_name: notification-service
-#    ports:
-#      - "9009:9009"
-#    depends_on:
-#      - db
-##      - keycloak
-#    environment:
-#      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/notification-service
-#      SPRING_DATASOURCE_USERNAME: postgres
-#      SPRING_DATASOURCE_PASSWORD: postgres
-#      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://nginx/realms/booking-app
-#      KEYCLOAK_SERVERURL: http://keycloak:8080
-#      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-#    networks:
-#      - bt-network
+  user-service:
+    build:
+      context: ../../bt-user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    ports:
+      - "9696:9696"
+    depends_on:
+      - db
+    #      - keycloak
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/user-service
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://nginx/realms/booking-app
+      KEYCLOAK_SERVERURL: http://keycloak:8080
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    networks:
+      - bt-network
+
+
+  restaurant-service:
+    build:
+      context: ../../bt-restaurant-service
+      dockerfile: Dockerfile
+    container_name: restaurant-service
+    ports:
+      - "9797:9797"
+    depends_on:
+      - db
+    #      - keycloak
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/restaurant-service
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://nginx/realms/booking-app
+      KEYCLOAK_SERVERURL: http://keycloak:8080
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    networks:
+      - bt-network
+
+
+  review-service:
+    build:
+      context: ../../bt-review-service
+      dockerfile: Dockerfile
+    container_name: review-service
+    ports:
+      - "9898:9898"
+    depends_on:
+      - db
+    #      - keycloak
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/review-service
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://nginx/realms/booking-app
+      KEYCLOAK_SERVERURL: http://keycloak:8080
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    networks:
+      - bt-network
+
+
+  booking-service:
+    build:
+      context: ../../bt-booking-service
+      dockerfile: Dockerfile
+    container_name: booking-service
+    ports:
+      - "9999:9999"
+    depends_on:
+      - db
+    #      - keycloak
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/booking-service
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://nginx/realms/booking-app
+      KEYCLOAK_SERVERURL: http://keycloak:8080
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    networks:
+      - bt-network
+
+  notification-service:
+    build:
+      context: ../../bt-notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    ports:
+      - "9009:9009"
+    depends_on:
+      - db
+    #      - keycloak
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/notification-service
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://nginx/realms/booking-app
+      KEYCLOAK_SERVERURL: http://keycloak:8080
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    networks:
+      - bt-network
 
   db:
     image: postgres:15
@@ -82,8 +164,8 @@ services:
       KC_HOSTNAME_STRICT: false
       KC_HTTP_ENABLED: true
       KC_HTTP_PORT: 8080
-#      KC_HOSTNAME_URL: http://nginx
-      KC_HOSTNAME_URL: http://localhost:8085
+      KC_HOSTNAME_URL: http://nginx
+    #      KC_HOSTNAME_URL: http://localhost:8085
 
     networks:
       - bt-network
@@ -108,11 +190,13 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: "1"
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: "0"
       CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
-    healthcheck:
-      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:29092 --list"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+#    healthcheck:
+#      disable: true
+#      #      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:29092 --list"]
+#      test: ["CMD-SHELL", "kafka-topics --bootstrap-server kafka:29092 --list"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
     networks:
       - bt-network
 

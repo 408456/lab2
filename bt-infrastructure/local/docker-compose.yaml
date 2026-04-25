@@ -8,8 +8,6 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/hello.html:/usr/share/nginx/html/hello.html:ro
-    #    depends_on:
-    #      - user-service
     networks:
       - bt-network
 
@@ -20,19 +18,19 @@ services:
     container_name: user-service
     ports:
       - "9696:9696"
+    env_file:
+      - .env
+    environment:
+      USER_DB_URL: ${USER_DB_URL}
+      KEYCLOAK_ISSUER_URI: ${KEYCLOAK_ISSUER_URI}
+      KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
     depends_on:
       - db
-    #      - keycloak
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/user-service
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://nginx/realms/booking-app
-      KEYCLOAK_SERVERURL: http://keycloak:8080
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      - kafka
+      - keycloak
     networks:
       - bt-network
-
 
   restaurant-service:
     build:
@@ -41,19 +39,19 @@ services:
     container_name: restaurant-service
     ports:
       - "9797:9797"
+    env_file:
+      - .env
+    environment:
+      RESTAURANT_DB_URL: ${RESTAURANT_DB_URL}
+      KEYCLOAK_ISSUER_URI: ${KEYCLOAK_ISSUER_URI}
+      KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
     depends_on:
       - db
-    #      - keycloak
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/restaurant-service
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://nginx/realms/booking-app
-      KEYCLOAK_SERVERURL: http://keycloak:8080
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      - kafka
+      - keycloak
     networks:
       - bt-network
-
 
   review-service:
     build:
@@ -62,19 +60,19 @@ services:
     container_name: review-service
     ports:
       - "9898:9898"
+    env_file:
+      - .env
+    environment:
+      REVIEW_DB_URL: ${REVIEW_DB_URL}
+      KEYCLOAK_ISSUER_URI: ${KEYCLOAK_ISSUER_URI}
+      KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
     depends_on:
       - db
-    #      - keycloak
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/review-service
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://nginx/realms/booking-app
-      KEYCLOAK_SERVERURL: http://keycloak:8080
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      - kafka
+      - keycloak
     networks:
       - bt-network
-
 
   booking-service:
     build:
@@ -83,16 +81,17 @@ services:
     container_name: booking-service
     ports:
       - "9999:9999"
+    env_file:
+      - .env
+    environment:
+      BOOKING_DB_URL: ${BOOKING_DB_URL}
+      KEYCLOAK_ISSUER_URI: ${KEYCLOAK_ISSUER_URI}
+      KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
     depends_on:
       - db
-    #      - keycloak
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/booking-service
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://nginx/realms/booking-app
-      KEYCLOAK_SERVERURL: http://keycloak:8080
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      - kafka
+      - keycloak
     networks:
       - bt-network
 
@@ -103,16 +102,17 @@ services:
     container_name: notification-service
     ports:
       - "9009:9009"
+    env_file:
+      - .env
+    environment:
+      NOTIFICATION_DB_URL: ${NOTIFICATION_DB_URL}
+      KEYCLOAK_ISSUER_URI: ${KEYCLOAK_ISSUER_URI}
+      KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
     depends_on:
       - db
-    #      - keycloak
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/notification-service
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://nginx/realms/booking-app
-      KEYCLOAK_SERVERURL: http://keycloak:8080
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      - kafka
+      - keycloak
     networks:
       - bt-network
 
@@ -123,8 +123,8 @@ services:
       - "5432:5432"
     environment:
       POSTGRES_DB: booking-service
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -136,8 +136,8 @@ services:
     container_name: keycloak-postgres-db
     environment:
       POSTGRES_DB: keycloak
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - keycloak-db-data:/var/lib/postgresql/data
     networks:
@@ -155,18 +155,15 @@ services:
       KC_DB: postgres
       KC_DB_URL_HOST: keycloak-db
       KC_DB_URL_DATABASE: keycloak
-      KC_DB_USERNAME: postgres
-      KC_DB_PASSWORD: postgres
-
+      KC_DB_USERNAME: ${POSTGRES_USER}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-
+      KC_HOSTNAME_STRICT_HTTPS: "false"
       KC_HOSTNAME_STRICT: false
       KC_HTTP_ENABLED: true
       KC_HTTP_PORT: 8080
       KC_HOSTNAME_URL: http://nginx
-    #      KC_HOSTNAME_URL: http://localhost:8085
-
     networks:
       - bt-network
 
@@ -190,13 +187,6 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: "1"
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: "0"
       CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
-#    healthcheck:
-#      disable: true
-#      #      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:29092 --list"]
-#      test: ["CMD-SHELL", "kafka-topics --bootstrap-server kafka:29092 --list"]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 5
     networks:
       - bt-network
 

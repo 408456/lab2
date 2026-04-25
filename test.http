@@ -1,0 +1,6 @@
+###
+# curl -I http://localhost:8080/hello.html
+GET http://72.56.249.242:8085/realms/booking-app/
+
+
+###

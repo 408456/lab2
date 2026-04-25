@@ -29,7 +29,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-
+    Long aLong;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final KeycloakUserService keycloakUserService;
